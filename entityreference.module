@@ -1094,6 +1094,7 @@ function entityreference_field_formatter_info() {
       'settings' => array(
         'view_mode' => 'default',
         'links' => TRUE,
+        'use_content_language' => TRUE,
       ),
     ),
   );
@@ -1136,6 +1137,12 @@ function entityreference_field_formatter_settings_form($field, $instance, $view_
       '#title' => t('Show links'),
       '#default_value' => $settings['links'],
     );
+
+     $element['use_content_language'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use current content language'),
+      '#default_value' => $settings['use_content_language'],
+    );
   }
 
   return $element;
@@ -1162,6 +1169,7 @@ function entityreference_field_formatter_settings_summary($field, $instance, $vi
     }
     $summary[] = t('Rendered as @mode', array('@mode' => $view_mode_label));
     $summary[] = !empty($settings['links']) ? t('Display links') : t('Do not display links');
+    $summary[] = !empty($settings['use_content_language']) ? t('Use current content language') : t('Use field language');
   }
 
   return implode('<br />', $summary);
@@ -1261,6 +1269,9 @@ function entityreference_field_formatter_view($entity_type, $entity, $field, $in
         $depth++;
         if ($depth > 20) {
           throw new EntityReferenceRecursiveRenderingException(t('Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering.', array('@entity_type' => $entity_type, '@entity_id' => $item['target_id'])));
+        }
+        if ($settings['use_content_language'] && !empty($GLOBALS['language_content']->language)) {
+          $langcode = $GLOBALS['language_content']->language;
         }
 
         $entity = clone $item['entity'];
